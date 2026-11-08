@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IRO-OTO LOUPE (イロオト・ルーペ)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --c-cyan: #00e5ff;
+            --c-magenta: #ff2a85;
+            --c-yellow: #ffd600;
+            --c-key: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #12151c;
+            background-image: radial-gradient(#242936 1.5px, transparent 1.5px);
+            background-size: 20px 20px;
+            color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* Friendly Toy Gadget Body */
+        .toy-body {
+            background: linear-gradient(180deg, #232834 0%, #191d26 100%);
+            border-radius: 32px;
+            border: 3px solid #353c4d;
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.7),
+                inset 0 2px 2px rgba(255, 255, 255, 0.12);
+        }
+
+        /* Giant Circular Magnifying Glass (Loupe) */
+        .loupe-ring {
+            width: min(68vw, 276px);
+            height: min(68vw, 276px);
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3e4659 0%, #202530 100%);
+            padding: 12px;
+            box-shadow: 
+                0 12px 28px rgba(0,0,0,0.6),
+                inset 0 2px 4px rgba(255,255,255,0.2),
+                0 0 0 4px #13161d;
+            position: relative;
+        }
+
+        /* Decorative Loupe Handle Grip */
+        .loupe-handle {
+            position: absolute;
+            bottom: -10px;
+            right: -8px;
+            width: 58px;
+            height: 36px;
+            background: linear-gradient(135deg, #ff2a85, #ff7b00);
+            border: 3px solid #13161d;
+            border-radius: 18px;
+            transform: rotate(38deg);
+            z-index: 0;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+        }
+
+        .loupe-lens {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #090b10;
+            border: 4px solid #11141b;
+            box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.9);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* Subtle Glass Reflection */
+        .glass-shine {
+            background: radial-gradient(
+                circle at 28% 22%, 
+                rgba(255, 255, 255, 0.18) 0%, 
+                rgba(255, 255, 255, 0.04) 30%, 
+                transparent 55%
+            );
+            pointer-events: none;
+        }
+
+        /* 4 Big CMYK Sound Pads */
+        .sound-pad {
+            background: #161922;
+            border: 2.5px solid #2d3343;
+            border-radius: 18px;
+            box-shadow: 0 4px 0 #0d0f14;
+            transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.12s, background-color 0.12s, box-shadow 0.12s;
+            position: relative;
+            overflow: hidden;
+        }
+        .sound-pad:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #0d0f14;
+        }
+        .sound-pad.playing-c {
+            transform: translateY(-4px) scale(1.03);
+            border-color: #00e5ff;
+            background: rgba(0, 229, 255, 0.18);
+            box-shadow: 0 6px 18px rgba(0, 229, 255, 0.35);
+        }
+        .sound-pad.playing-m {
+            transform: translateY(-4px) scale(1.03);
+            border-color: #ff2a85;
+            background: rgba(255, 42, 133, 0.18);
+            box-shadow: 0 6px 18px rgba(255, 42, 133, 0.35);
+        }
+        .sound-pad.playing-y {
+            transform: translateY(-4px) scale(1.03);
+            border-color: #ffd600;
+            background: rgba(255, 214, 0, 0.18);
+            box-shadow: 0 6px 18px rgba(255, 214, 0, 0.35);
+        }
+        .sound-pad.playing-k {
+            transform: translateY(-4px) scale(1.03);
+            border-color: #ffffff;
+            background: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 6px 18px rgba(255, 255, 255, 0.3);
+        }
+        .sound-pad.is-muted {
+            opacity: 0.38;
+            filter: grayscale(85%);
+        }
+
+        /* Big Tactile Toy Buttons */
+        .btn-toy {
+            border-radius: 20px;
+            font-weight: 800;
+            transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }
+        .btn-toy:active {
+            transform: translateY(4px);
+        }
+
+        .btn-main-start {
+            background: linear-gradient(180deg, #00e5ff 0%, #00b8d4 100%);
+            color: #062026;
+            border: 2px solid #84ffff;
+            box-shadow: 0 5px 0 #006064, 0 8px 20px rgba(0, 229, 255, 0.3);
+        }
+        .btn-main-start:active {
+            box-shadow: 0 1px 0 #006064;
+        }
+
+        .btn-main-stop {
+            background: linear-gradient(180deg, #ff5252 0%, #d50000 100%);
+            color: #ffffff;
+            border: 2px solid #ff8a80;
+            box-shadow: 0 5px 0 #7f0000, 0 8px 20px rgba(255, 82, 82, 0.3);
+        }
+        .btn-main-stop:active {
+            box-shadow: 0 1px 0 #7f0000;
+        }
+
+        .btn-freeze {
+            background: linear-gradient(180deg, #333b4d 0%, #252b38 100%);
+            color: #e2e8f0;
+            border: 2px solid #49536b;
+            box-shadow: 0 5px 0 #11141c;
+        }
+        .btn-freeze:active {
+            box-shadow: 0 1px 0 #11141c;
+        }
+        .btn-freeze.active-lock {
+            background: linear-gradient(180deg, #ff2a85 0%, #c60055 100%);
+            color: #ffffff;
+            border-color: #ff80b3;
+            box-shadow: 0 5px 0 #6a002c, 0 6px 16px rgba(255, 42, 133, 0.35);
+        }
+
+        @keyframes pulse-gentle {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .animate-pulse-btn {
+            animation: pulse-gentle 1.8s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-2 sm:p-4">
+
+    <!-- Hidden Video for Camera & Hidden Audio for iOS Silent Switch Bypass -->
+    <video id="cameraVideo" playsinline muted class="hidden"></video>
+    <audio id="iosSilentBypassAudio" loop preload="auto" playsinline class="hidden"></audio>
+
+    <!-- MAIN GADGET CONTAINER -->
+    <main class="toy-body w-full max-w-[400px] h-full max-h-[760px] px-4 py-3.5 flex flex-col justify-between">
+        
+        <!-- 1. TOP BAR: App Title & Easy Camera Switch -->
+        <header class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <!-- Cute CMYK Dots Icon -->
+                <div class="grid grid-cols-2 gap-1 bg-slate-900 p-1.5 rounded-xl border border-slate-700">
+                    <span class="w-2.5 h-2.5 rounded-full bg-[#00e5ff] block"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-[#ff2a85] block"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-[#ffd600] block"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-white block"></span>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white leading-none">
+                        イロオト・ルーペ
+                    </h1>
+                    <p id="statusSubtext" class="text-[11px] text-slate-400 font-bold mt-0.5">
+                        色をうつすとピコピコ鳴るよ
+                    </p>
+                </div>
+            </div>
+
+            <!-- Compact Camera / Demo Switch Button -->
+            <button id="btnSource" class="bg-slate-800 hover:bg-slate-700 active:translate-y-0.5 text-slate-200 border border-slate-600 rounded-xl px-2.5 py-1.5 text-xs font-bold flex items-center gap-1 shadow">
+                <span>📷</span>
+                <span id="sourceLabel">カメラ切替</span>
+            </button>
+        </header>
+
+        <!-- 2. CENTER: GIANT CIRCULAR MAGNIFYING GLASS (LOUPE) -->
+        <section class="flex flex-col items-center justify-center my-auto relative">
+            <div class="loupe-ring flex items-center justify-center">
+                <!-- Decorative Magnifier Handle -->
+                <div class="loupe-handle"></div>
+
+                <!-- Circular Lens Viewport -->
+                <div class="loupe-lens">
+                    <canvas id="loupeCanvas" width="260" height="260" class="w-full h-full block cursor-pointer"></canvas>
+
+                    <!-- Glass Reflection Shine -->
+                    <div class="glass-shine absolute inset-0"></div>
+
+                    <!-- Freeze Status Badge inside Lens -->
+                    <div id="freezeBadge" class="hidden absolute top-3 inset-x-0 flex justify-center pointer-events-none z-10">
+                        <span class="bg-pink-600/95 text-white text-[11px] font-extrabold px-3 py-0.5 rounded-full shadow-lg border border-pink-300 animate-pulse">
+                            ❄️ 画面を固定中（ループ再生）
+                        </span>
+                    </div>
+
+                    <!-- Demo Mode Touch Hint inside Lens -->
+                    <div id="demoTouchHint" class="hidden absolute bottom-2.5 inset-x-0 flex justify-center pointer-events-none z-10">
+                        <span class="bg-black/75 text-slate-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-white/15">
+                            👆 レンズの中をさわると色が変わるよ
+                        </span>
+                    </div>
+
+                    <!-- INITIAL ONBOARDING START OVERLAY -->
+                    <div id="startOverlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm flex flex-col items-center justify-center p-3 text-center z-20">
+                        <div class="w-auto px-3 h-12 rounded-2xl bg-slate-800 border-2 border-cyan-400 flex items-center justify-center text-xl gap-1 mb-1.5 shadow-[0_0_20px_rgba(0,229,255,0.3)]">
+                            <span>🔍</span><span>🎵</span>
+                        </div>
+                        <p class="text-white text-xs sm:text-sm font-extrabold leading-tight mb-1">
+                            カメラで映した「色」が<br>ピコピコ音楽になるルーペ
+                        </p>
+                        <p class="text-slate-400 text-[10px] mb-2.5">
+                            身のまわりのカラフルな物をうつしてみてね
+                        </p>
+                        <button id="overlayStartBtn" class="btn-toy btn-main-start animate-pulse-btn text-[11px] sm:text-xs px-4 py-1.5 rounded-full flex flex-col items-center justify-center leading-tight cursor-pointer mx-auto">
+                            <div class="flex items-center gap-1 mb-0.5"><span class="text-xs">🔍</span><span>カメラと音を</span></div>
+                            <span>スタート</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. BELOW LOUPE: 4 BIG CMYK SOUND PADS (BOUNCE & LIGHT UP, TAP TO MUTE) -->
+        <section class=" flex flex-col gap-1.5">
+            <div class="flex items-center justify-between px-1">
+                <span class="text-[11px] font-bold text-slate-300">🎨 4つの色と楽器（タップで音のON/OFF）</span>
+            </div>
+
+            <div class="grid grid-cols-4 gap-2">
+                <!-- C: Cyan / Melody -->
+                <button data-ch="c" id="padC" class="sound-pad p-2 flex flex-col items-center text-center">
+                    <div class="flex items-center justify-between w-full mb-0.5">
+                        <span class="w-3 h-3 rounded-full bg-[#00e5ff] shadow-[0_0_8px_#00e5ff]"></span>
+                        <span id="muteIconC" class="text-xs">🔊</span>
+                    </div>
+                    <span class="text-xs font-extrabold text-[#00e5ff] leading-tight">ブルー</span>
+                    <span class="text-[10px] font-bold text-slate-300 mt-0.5">メロディ</span>
+                    <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden mt-1.5">
+                        <div id="barC" class="bg-[#00e5ff] h-full w-0 transition-all duration-75"></div>
+                    </div>
+                </button>
+
+                <!-- M: Magenta / Harmony -->
+                <button data-ch="m" id="padM" class="sound-pad p-2 flex flex-col items-center text-center">
+                    <div class="flex items-center justify-between w-full mb-0.5">
+                        <span class="w-3 h-3 rounded-full bg-[#ff2a85] shadow-[0_0_8px_#ff2a85]"></span>
+                        <span id="muteIconM" class="text-xs">🔊</span>
+                    </div>
+                    <span class="text-xs font-extrabold text-[#ff2a85] leading-tight">ピンク</span>
+                    <span class="text-[10px] font-bold text-slate-300 mt-0.5">ハモリ</span>
+                    <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden mt-1.5">
+                        <div id="barM" class="bg-[#ff2a85] h-full w-0 transition-all duration-75"></div>
+                    </div>
+                </button>
+
+                <!-- Y: Yellow / Bass -->
+                <button data-ch="y" id="padY" class="sound-pad p-2 flex flex-col items-center text-center">
+                    <div class="flex items-center justify-between w-full mb-0.5">
+                        <span class="w-3 h-3 rounded-full bg-[#ffd600] shadow-[0_0_8px_#ffd600]"></span>
+                        <span id="muteIconY" class="text-xs">🔊</span>
+                    </div>
+                    <span class="text-xs font-extrabold text-[#ffd600] leading-tight">イエロー</span>
+                    <span class="text-[10px] font-bold text-slate-300 mt-0.5">ベース</span>
+                    <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden mt-1.5">
+                        <div id="barY" class="bg-[#ffd600] h-full w-0 transition-all duration-75"></div>
+                    </div>
+                </button>
+
+                <!-- K: Black / Drum -->
+                <button data-ch="k" id="padK" class="sound-pad p-2 flex flex-col items-center text-center">
+                    <div class="flex items-center justify-between w-full mb-0.5">
+                        <span class="w-3 h-3 rounded-full bg-white border border-slate-400 shadow-[0_0_8px_#ffffff]"></span>
+                        <span id="muteIconK" class="text-xs">🔊</span>
+                    </div>
+                    <span class="text-xs font-extrabold text-white leading-tight">くろ</span>
+                    <span class="text-[10px] font-bold text-slate-300 mt-0.5">ドラム</span>
+                    <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden mt-1.5">
+                        <div id="barK" class="bg-white h-full w-0 transition-all duration-75"></div>
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- 4. BOTTOM: ONLY 2 BIG PRIMARY BUTTONS -->
+        <footer class="grid grid-cols-5 gap-2.5 pt-2">
+            <!-- Huge Start / Stop Button (3 cols) -->
+            <button id="btnStartStop" class="col-span-3 btn-toy btn-main-start py-3.5 px-3 flex items-center justify-center gap-2 text-sm sm:text-base">
+                <span id="startStopIcon">▶</span>
+                <span id="startStopText">スキャン開始</span>
+            </button>
+
+            <!-- Big Freeze / Lock Button (2 cols) -->
+            <button id="btnFreeze" class="col-span-2 btn-toy btn-freeze py-3.5 px-2 flex items-center justify-center gap-1.5 text-xs sm:text-sm">
+                <span>❄️</span>
+                <span id="freezeText">画面を固定</span>
+            </button>
+        </footer>
+
+    </main>
+
+    <script>
+        /**
+         * IRO-OTO LOUPE (イロオト・ルーペ)
+         * Super Intuitive Camera CMYK Halftone Musical Loupe
+         */
+        (() => {
+            // Chunky 12x8 grid so halftone dots are big, clear, and musical
+            const COLS = 12;
+            const ROWS = 8;
+            const BPM = 125;
+
+            // Pleasant C Major Pentatonic Scale (8 rows from bottom to top)
+            const MELODY_NOTES = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
+            const HARMONY_NOTES = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51];
+            const BASS_NOTES = [65.41, 73.42, 82.41, 98.00, 110.00, 130.81, 146.83, 164.81];
+
+            // State
+            let isRunning = false;
+            let isFrozen = false;
+            let useDemoPattern = false;
+            let facingMode = 'environment';
+            let currentStep = 0;
+            let demoTime = 0;
+            let demoHueOffset = 0;
+
+            const muted = { c: false, m: false, y: false, k: false };
+
+            // Active pop animations inside the loupe
+            let activePopDots = [];
+
+            // 12x8 Grid Data
+            const grid = Array.from({ length: COLS }, () =>
+                Array.from({ length: ROWS }, () => ({ c: 0, m: 0, y: 0, k: 0, r: 0, g: 0, b: 0 }))
+            );
+
+            // DOM Elements
+            const video = document.getElementById('cameraVideo');
+            const iosSilentAudio = document.getElementById('iosSilentBypassAudio');
+            const canvas = document.getElementById('loupeCanvas');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+            // Offscreen sampler
+            const sampleCanvas = document.createElement('canvas');
+            sampleCanvas.width = COLS;
+            sampleCanvas.height = ROWS;
+            const sampleCtx = sampleCanvas.getContext('2d', { willReadFrequently: true });
+
+            const startOverlay = document.getElementById('startOverlay');
+            const overlayStartBtn = document.getElementById('overlayStartBtn');
+            const statusSubtext = document.getElementById('statusSubtext');
+            const sourceLabel = document.getElementById('sourceLabel');
+            const freezeBadge = document.getElementById('freezeBadge');
+            const demoTouchHint = document.getElementById('demoTouchHint');
+
+            const btnStartStop = document.getElementById('btnStartStop');
+            const startStopIcon = document.getElementById('startStopIcon');
+            const startStopText = document.getElementById('startStopText');
+            const btnFreeze = document.getElementById('btnFreeze');
+            const freezeText = document.getElementById('freezeText');
+
+            const pads = {
+                c: document.getElementById('padC'),
+                m: document.getElementById('padM'),
+                y: document.getElementById('padY'),
+                k: document.getElementById('padK')
+            };
+            const bars = {
+                c: document.getElementById('barC'),
+                m: document.getElementById('barM'),
+                y: document.getElementById('barY'),
+                k: document.getElementById('barK')
+            };
+            const muteIcons = {
+                c: document.getElementById('muteIconC'),
+                m: document.getElementById('muteIconM'),
+                y: document.getElementById('muteIconY'),
+                k: document.getElementById('muteIconK')
+            };
+
+            // Web Audio API & iOS Silent Switch Bypass
+            let audioCtx = null;
+            let noiseBuffer = null;
+            let stepTimer = null;
+
+            function createSilentWavDataUri() {
+                const buffer = new ArrayBuffer(48);
+                const view = new DataView(buffer);
+                const writeString = (offset, str) => {
+                    for (let i = 0; i < str.length; i++) {
+                        view.setUint8(offset + i, str.charCodeAt(i));
+                    }
+                };
+                writeString(0, 'RIFF');
+                view.setUint32(4, 40, true);
+                writeString(8, 'WAVE');
+                writeString(12, 'fmt ');
+                view.setUint32(16, 16, true);
+                view.setUint16(20, 1, true);
+                view.setUint16(22, 1, true);
+                view.setUint32(24, 8000, true);
+                view.setUint32(28, 16000, true);
+                view.setUint16(32, 2, true);
+                view.setUint16(34, 16, true);
+                writeString(36, 'data');
+                view.setUint32(40, 4, true);
+                view.setUint32(44, 0, true);
+
+                const bytes = new Uint8Array(buffer);
+                let binary = '';
+                for (let i = 0; i < bytes.byteLength; i++) {
+                    binary += String.fromCharCode(bytes[i]);
+                }
+                return 'data:audio/wav;base64,' + btoa(binary);
+            }
+
+            iosSilentAudio.src = createSilentWavDataUri();
+
+            async function unlockAudio() {
+                try {
+                    if ('audioSession' in navigator && navigator.audioSession) {
+                        navigator.audioSession.type = 'playback';
+                    }
+                    iosSilentAudio.volume = 0.01;
+                    const playPromise = iosSilentAudio.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(() => {});
+                    }
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (!audioCtx) {
+                        audioCtx = new AudioContextClass();
+                        createNoiseBuffer();
+                    }
+                    if (audioCtx.state === 'suspended') {
+                        await audioCtx.resume();
+                    }
+                } catch (e) {
+                    console.warn('Audio unlock warning:', e);
+                }
+            }
+
+            function createNoiseBuffer() {
+                if (!audioCtx) return;
+                const bufferSize = audioCtx.sampleRate * 0.25;
+                noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                let last = 0;
+                for (let i = 0; i < bufferSize; i++) {
+                    if (i % 3 === 0) last = Math.random() * 2 - 1;
+                    output[i] = last;
+                }
+            }
+
+            function bouncePad(ch) {
+                const pad = pads[ch];
+                const cls = `playing-${ch}`;
+                pad.classList.add(cls);
+                setTimeout(() => pad.classList.remove(cls), 140);
+            }
+
+            // Trigger 8-bit chiptune sound & visual pop for the active scanline column
+            function triggerStepColumn(colIndex) {
+                if (!audioCtx || audioCtx.state !== 'running') return;
+
+                const col = grid[colIndex];
+                const now = audioCtx.currentTime;
+                const stepDur = (60 / BPM) / 3; // Crisp 12-step groove
+
+                let maxC = 0, rowC = 0;
+                let maxM = 0, rowM = 0;
+                let maxY = 0, rowY = 0;
+                let maxK = 0, rowK = 0;
+
+                for (let r = 0; r < ROWS; r++) {
+                    const cell = col[r];
+                    const pitchIdx = (ROWS - 1) - r;
+                    if (cell.c > maxC) { maxC = cell.c; rowC = pitchIdx; }
+                    if (cell.m > maxM) { maxM = cell.m; rowM = pitchIdx; }
+                    if (cell.y > maxY) { maxY = cell.y; rowY = pitchIdx; }
+                    if (cell.k > maxK) { maxK = cell.k; rowK = pitchIdx; }
+                }
+
+                // Update level bars on the 4 pads
+                bars.c.style.width = `${Math.min(100, Math.round(maxC * 115))}%`;
+                bars.m.style.width = `${Math.min(100, Math.round(maxM * 115))}%`;
+                bars.y.style.width = `${Math.min(100, Math.round(maxY * 115))}%`;
+                bars.k.style.width = `${Math.min(100, Math.round(maxK * 115))}%`;
+
+                // 1. C (Cyan) -> Square Wave Melody
+                if (!muted.c && maxC > 0.18) {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(MELODY_NOTES[rowC], now);
+                    gain.gain.setValueAtTime(Math.min(0.14, maxC * 0.16), now);
+                    gain.gain.exponentialRampToValueAtTime(0.002, now + stepDur * 0.95);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + stepDur);
+
+                    bouncePad('c');
+                    activePopDots.push({ col: colIndex, row: (ROWS - 1) - rowC, color: '#00e5ff', alpha: 1.0 });
+                }
+
+                // 2. M (Magenta) -> Sawtooth Harmony Arpeggio
+                if (!muted.m && maxM > 0.2) {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    const f1 = HARMONY_NOTES[rowM];
+                    const f2 = HARMONY_NOTES[(rowM + 2) % ROWS];
+                    osc.frequency.setValueAtTime(f1, now);
+                    osc.frequency.setValueAtTime(f2, now + stepDur * 0.45);
+                    gain.gain.setValueAtTime(Math.min(0.10, maxM * 0.12), now);
+                    gain.gain.exponentialRampToValueAtTime(0.002, now + stepDur * 0.9);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + stepDur);
+
+                    bouncePad('m');
+                    activePopDots.push({ col: colIndex, row: (ROWS - 1) - rowM, color: '#ff2a85', alpha: 1.0 });
+                }
+
+                // 3. Y (Yellow) -> Triangle Bass
+                if (!muted.y && maxY > 0.2) {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(BASS_NOTES[rowY], now);
+                    gain.gain.setValueAtTime(Math.min(0.25, maxY * 0.28), now);
+                    gain.gain.exponentialRampToValueAtTime(0.004, now + stepDur * 1.15);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + stepDur * 1.2);
+
+                    bouncePad('y');
+                    activePopDots.push({ col: colIndex, row: (ROWS - 1) - rowY, color: '#ffd600', alpha: 1.0 });
+                }
+
+                // 4. K (Black) -> Crisp 8-Bit Drum (Kick + Snare/Hat)
+                if (!muted.k && maxK > 0.28 && noiseBuffer) {
+                    if (maxK > 0.55 || colIndex % 3 === 0) {
+                        const kickOsc = audioCtx.createOscillator();
+                        const kickGain = audioCtx.createGain();
+                        kickOsc.type = 'square';
+                        kickOsc.frequency.setValueAtTime(140, now);
+                        kickOsc.frequency.exponentialRampToValueAtTime(38, now + 0.08);
+                        kickGain.gain.setValueAtTime(0.16, now);
+                        kickGain.gain.exponentialRampToValueAtTime(0.004, now + 0.09);
+                        kickOsc.connect(kickGain);
+                        kickGain.connect(audioCtx.destination);
+                        kickOsc.start(now);
+                        kickOsc.stop(now + 0.095);
+                    }
+
+                    const noise = audioCtx.createBufferSource();
+                    noise.buffer = noiseBuffer;
+                    const filter = audioCtx.createBiquadFilter();
+                    filter.type = 'highpass';
+                    filter.frequency.setValueAtTime(2800, now);
+                    const noiseGain = audioCtx.createGain();
+                    noiseGain.gain.setValueAtTime(Math.min(0.14, maxK * 0.18), now);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.002, now + 0.055);
+                    noise.connect(filter);
+                    filter.connect(noiseGain);
+                    noiseGain.connect(audioCtx.destination);
+                    noise.start(now);
+                    noise.stop(now + 0.06);
+
+                    bouncePad('k');
+                    activePopDots.push({ col: colIndex, row: (ROWS - 1) - rowK, color: '#ffffff', alpha: 1.0 });
+                }
+            }
+
+            // Camera Setup & Automatic Interactive Demo Fallback
+            async function initCamera() {
+                if (useDemoPattern) {
+                    stopCameraStream();
+                    sourceLabel.textContent = 'デモ画面中';
+                    statusSubtext.textContent = 'カラフルなデモ模様をスキャン中';
+                    demoTouchHint.classList.remove('hidden');
+                    return;
+                }
+                try {
+                    stopCameraStream();
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: { ideal: facingMode },
+                            width: { ideal: 320 },
+                            height: { ideal: 320 }
+                        },
+                        audio: false
+                    });
+                    video.srcObject = stream;
+                    await video.play();
+                    useDemoPattern = false;
+                    sourceLabel.textContent = facingMode === 'environment' ? '外カメラ' : '自撮りカメラ';
+                    statusSubtext.textContent = 'いろんな色をルーペでうつしてみよう！';
+                    demoTouchHint.classList.add('hidden');
+                } catch (err) {
+                    useDemoPattern = true;
+                    sourceLabel.textContent = 'デモ画面中';
+                    statusSubtext.textContent = 'カメラなしでもデモ模様で遊べます♪';
+                    demoTouchHint.classList.remove('hidden');
+                }
+            }
+
+            function stopCameraStream() {
+                if (video.srcObject) {
+                    video.srcObject.getTracks().forEach(t => t.stop());
+                    video.srcObject = null;
+                }
+            }
+
+            function rgbToCmyk(r, g, b) {
+                const rn = r / 255, gn = g / 255, bn = b / 255;
+                const k = 1 - Math.max(rn, gn, bn);
+                if (k >= 0.999) return { c: 0, m: 0, y: 0, k: 1 };
+                return {
+                    c: (1 - rn - k) / (1 - k),
+                    m: (1 - gn - k) / (1 - k),
+                    y: (1 - bn - k) / (1 - k),
+                    k
+                };
+            }
+
+            function sampleCurrentFrame() {
+                if (isFrozen) return;
+
+                if (!useDemoPattern && video.readyState >= 2) {
+                    const vw = video.videoWidth || 260;
+                    const vh = video.videoHeight || 260;
+                    const size = Math.min(vw, vh);
+                    const sx = (vw - size) / 2;
+                    const sy = (vh - size) / 2;
+                    sampleCtx.drawImage(video, sx, sy, size, size, 0, 0, COLS, ROWS);
+                } else {
+                    // Vibrant Moving Color Patches for Demo Mode
+                    demoTime += 0.04;
+                    for (let x = 0; x < COLS; x++) {
+                        for (let y = 0; y < ROWS; y++) {
+                            const r = Math.sin(x * 0.5 + demoTime + demoHueOffset) * 127 + 128;
+                            const g = Math.cos(y * 0.65 - demoTime * 0.8 + demoHueOffset) * 127 + 128;
+                            const b = Math.sin((x + y) * 0.45 + demoTime * 1.2) * 127 + 128;
+                            sampleCtx.fillStyle = `rgb(${r|0},${g|0},${b|0})`;
+                            sampleCtx.fillRect(x, y, 1, 1);
+                        }
+                    }
+                }
+
+                const data = sampleCtx.getImageData(0, 0, COLS, ROWS).data;
+                for (let row = 0; row < ROWS; row++) {
+                    for (let col = 0; col < COLS; col++) {
+                        const i = (row * COLS + col) * 4;
+                        const r = data[i], g = data[i + 1], b = data[i + 2];
+                        grid[col][row] = { ...rgbToCmyk(r, g, b), r, g, b };
+                    }
+                }
+            }
+
+            function renderLoupe() {
+                sampleCurrentFrame();
+
+                const w = canvas.width;
+                const h = canvas.height;
+                const cellW = w / COLS;
+                const cellH = h / ROWS;
+
+                ctx.fillStyle = '#090b10';
+                ctx.fillRect(0, 0, w, h);
+
+                for (let col = 0; col < COLS; col++) {
+                    const isScanCol = isRunning && (col === currentStep);
+
+                    for (let row = 0; row < ROWS; row++) {
+                        const cell = grid[col][row];
+                        const x = col * cellW;
+                        const y = row * cellH;
+                        const cx = x + cellW / 2;
+                        const cy = y + cellH / 2;
+
+                        // 背景のカメラ色を濃くし、マスの隙間をなくして「モザイク画」として認識できるようにする[cite: 1]
+                        ctx.fillStyle = `rgba(${cell.r}, ${cell.g}, ${cell.b}, ${isScanCol ? 0.8 : 0.55})`;
+                        ctx.fillRect(x, y, cellW, cellH);
+
+                        const maxR = Math.min(cellW, cellH) * 0.42;
+
+                        // Vibrant CMY Halftone Dots
+                        ctx.save();
+                        ctx.globalCompositeOperation = 'lighter';
+
+                        if (!muted.c && cell.c > 0.14) {
+                            ctx.fillStyle = '#00e5ff';
+                            ctx.beginPath();
+                            ctx.arc(cx - 2.5, cy - 2, cell.c * maxR, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        if (!muted.m && cell.m > 0.14) {
+                            ctx.fillStyle = '#ff2a85';
+                            ctx.beginPath();
+                            ctx.arc(cx + 2.5, cy - 2, cell.m * maxR, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        if (!muted.y && cell.y > 0.14) {
+                            ctx.fillStyle = '#ffd600';
+                            ctx.beginPath();
+                            ctx.arc(cx, cy + 2.5, cell.y * maxR, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        ctx.restore();
+
+                        // K (Black) Rhythm Ring
+                        if (!muted.k && cell.k > 0.25) {
+                            ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+                            ctx.lineWidth = 1.5;
+                            ctx.beginPath();
+                            ctx.arc(cx, cy, cell.k * maxR * 0.85, 0, Math.PI * 2);
+                            ctx.stroke();
+                        }
+                    }
+
+                    // Obvious Glowing Vertical Scanline Bar
+                    if (isScanCol) {
+                        const sx = col * cellW;
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+                        ctx.fillRect(sx, 0, cellW, h);
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2.5;
+                        ctx.strokeRect(sx + 1, 1, cellW - 2, h - 2);
+                    }
+                }
+
+                // Draw Popping Sound Bubbles on Triggered Dots
+                for (let i = activePopDots.length - 1; i >= 0; i--) {
+                    const p = activePopDots[i];
+                    const px = p.col * cellW + cellW / 2;
+                    const py = p.row * cellH + cellH / 2;
+                    const radius = (1.2 - p.alpha) * 22 + 6;
+
+                    ctx.save();
+                    ctx.strokeStyle = p.color;
+                    ctx.globalAlpha = p.alpha;
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(px, py, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    p.alpha -= 0.08;
+                    if (p.alpha <= 0) activePopDots.splice(i, 1);
+                }
+
+                requestAnimationFrame(renderLoupe);
+            }
+
+            function scheduleLoop() {
+                if (!isRunning) return;
+                const stepMs = ((60 / BPM) / 3) * 1000;
+                stepTimer = setTimeout(() => {
+                    if (!isRunning) return;
+                    triggerStepColumn(currentStep);
+                    currentStep = (currentStep + 1) % COLS;
+                    scheduleLoop();
+                }, stepMs);
+            }
+
+            async function startApp() {
+                await unlockAudio();
+                await initCamera();
+
+                isRunning = true;
+                startOverlay.classList.add('hidden');
+
+                btnStartStop.classList.remove('btn-main-start');
+                btnStartStop.classList.add('btn-main-stop');
+                startStopIcon.textContent = '⏹';
+                startStopText.textContent = 'ストップ';
+
+                clearTimeout(stepTimer);
+                scheduleLoop();
+            }
+
+            function stopApp() {
+                isRunning = false;
+                clearTimeout(stepTimer);
+
+                btnStartStop.classList.remove('btn-main-stop');
+                btnStartStop.classList.add('btn-main-start');
+                startStopIcon.textContent = '▶';
+                startStopText.textContent = 'スキャン開始';
+                statusSubtext.textContent = '一時停止中（▶で再開します）';
+            }
+
+            function toggleFreeze() {
+                if (!isRunning) return;
+                isFrozen = !isFrozen;
+                freezeBadge.classList.toggle('hidden', !isFrozen);
+                btnFreeze.classList.toggle('active-lock', isFrozen);
+                freezeText.textContent = isFrozen ? '固定を解除' : '画面を固定';
+            }
+
+            // Event Listeners
+            overlayStartBtn.addEventListener('click', startApp);
+
+            btnStartStop.addEventListener('click', () => {
+                if (isRunning) stopApp();
+                else startApp();
+            });
+
+            btnFreeze.addEventListener('click', toggleFreeze);
+
+            // Tapping inside the loupe shifts demo colors or toggles freeze
+            canvas.addEventListener('pointerdown', () => {
+                if (!isRunning) {
+                    startApp();
+                } else if (useDemoPattern && !isFrozen) {
+                    demoHueOffset += 1.4;
+                } else {
+                    toggleFreeze();
+                }
+            });
+
+            // Switch Camera / Demo Pattern
+            document.getElementById('btnSource').addEventListener('click', async () => {
+                await unlockAudio();
+                if (!useDemoPattern && facingMode === 'environment') {
+                    facingMode = 'user';
+                } else if (!useDemoPattern && facingMode === 'user') {
+                    useDemoPattern = true;
+                } else {
+                    useDemoPattern = false;
+                    facingMode = 'environment';
+                }
+                await initCamera();
+            });
+
+            // 4 CMYK Sound Pads: Tap to toggle Mute ON/OFF
+            ['c', 'm', 'y', 'k'].forEach(ch => {
+                pads[ch].addEventListener('click', () => {
+                    muted[ch] = !muted[ch];
+                    pads[ch].classList.toggle('is-muted', muted[ch]);
+                    muteIcons[ch].textContent = muted[ch] ? '🔇' : '🔊';
+                });
+            });
+
+            // Start preview animation on load
+            useDemoPattern = true;
+            window.onload = () => {
+                renderLoupe();
+                useDemoPattern = false;
+            };
+        })();
+    </script>
+</body>
+</html>
